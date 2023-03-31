@@ -1,33 +1,22 @@
 import ply.lex as lex
 
-#BRACKET et ANGLE_BRACKET réunis les 2 types pour le moment
+
 tokens = (      
-    'BRACKET',
-    'PIPE',
-    'ANGLE_BRACKET',
-    'SLASH',
+    'DUMBO_MARK',
     'SEMICOLON',
-    'COLON',
-    'EQUAL',
-    'QUOTE',
-    'SINGLE_QUOTE',
-    'HTML_TAG'
+    'ASSIGN',
+    'TXT'
 )
 
-
-t_BRACKET = r'\{|\}'
-t_PIPE = r'\|'
-t_ANGLE_BRACKET = r'<|>'
-t_SLASH = r'/'
+#Tokens defined by strings are added by sorting them in order of
+#decreasing regular expression length (longer expressions are added first).
+t_DUMBO_MARK = r'(\{\{)|(\}\})'
 t_SEMICOLON = r';'
-t_COLON = r':'
-t_EQUAL = r'='
-t_QUOTE = r'\"'
-t_SINGLE_QUOTE = r'\''
+t_ASSIGN = r':='
 
 
-def t_HTML_TAG(t):
-    r'html|head|title|body|h1|br'
+def t_TXT(t):
+    r'(\w|\W|[^\S])*'
     return t
 
 
