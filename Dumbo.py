@@ -20,7 +20,6 @@ tokens = (
 #decreasing regular expression length (longer expressions are added first).
 t_DUMBO_MARK = r'(\{\{)|(\}\})'
 t_SEMICOLON = r';'
-t_ASSIGN = r':='
 t_LETTERS = r'[a-zA-Z]'
 t_NUMBERS = r'\d'
 t_SYMBOLS = r'\W'
@@ -28,6 +27,11 @@ t_SYMBOLS_NO_BRACKETS = r'[^a-zA-Z0-9{}]' #Might replace that one with a regex f
 
 
 #All tokens defined by functions are added first in the same order as they appear in the lexer file
+def t_ASSIGN(t):
+    r':='
+    return t
+
+
 def t_PRINT(t):
     r'print'
     return t
