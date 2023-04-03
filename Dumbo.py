@@ -56,9 +56,35 @@ def t_error(t):
 t_ignore = ' \t'
 
 
+def p_programme(p):
+    '''programme : txt
+                 | txt programme
+                 | dumbo_bloc 
+                 | dumbo_bloc programme'''
+    if p[1] == 'txt': #Not sure for the process 
+        if len(p) == 2:
+            p[0] = p[1]
+        else:
+            p[0] = p[1] + p[2]
+    elif p[1] == 'dumbo_bloc':
+        if len(p) == 2:
+            p[0] = p[1]
+        else:
+            p[0] = p[1] + p[2]
+
+
+def p_error(p):
+    if p:
+        print("Syntax error at token", p.type)
+        # Just discard the token and tell the parser it's okay.
+        parser.errok()
+    else:
+        print("Syntax error at EOF")
+
 #Testing
 if __name__ == "__main__":
     lexer = lex.lex()
+    parser = yacc.yacc()
     lexer.input("{|}print print {{ }} |}<  >/ ;; := \" \'")
     for token in lex.lexer:
         print("line %d : %s (%s)" % (token.lineno, token.type, token.value))
