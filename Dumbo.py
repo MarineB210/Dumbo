@@ -1,7 +1,15 @@
 import ply.lex as lex
+import ply.yacc as yacc
 
+reserved = {
+    'print': 'PRINT',
+    'for': 'FOR',
+    'in': 'IN',
+    'do': 'DO',
+    'endfor': 'ENDFOR'
+}
 
-tokens = (      
+tokens = [      
     'DUMBO_MARK',
     'SEMICOLON',
     'ASSIGN',
@@ -9,12 +17,8 @@ tokens = (
     'NUMBERS',
     'SYMBOLS',
     'SYMBOLS_NO_BRACKETS',
-    'PRINT',
-    'FOR',
-    'IN',
-    'DO',
-    'ENDFOR'
-)
+    'ID'
+] + list(reserved.values())
 
 #Tokens defined by strings are added by sorting them in order of
 #decreasing regular expression length (longer expressions are added first).
@@ -23,37 +27,18 @@ t_SEMICOLON = r';'
 t_LETTERS = r'[a-zA-Z]'
 t_NUMBERS = r'\d'
 t_SYMBOLS = r'\W'
-t_SYMBOLS_NO_BRACKETS = r'[^a-zA-Z0-9{}]' #Might replace that one with a regex for simple brackets
+t_SYMBOLS_NO_BRACKETS = r'[^a-zA-Z0-9{}]'  #Might replace that one with a regex for simple brackets
 
-
-#All tokens defined by functions are added first in the same order as they appear in the lexer file
+#All tokens defined by functions are added first in the same order as 
+#they appear in the lexer file
 def t_ASSIGN(t):
     r':='
     return t
 
 
-def t_PRINT(t):
-    r'print'
-    return t
-
-
-def t_FOR(t):
-    r'for'
-    return t
-
-
-def t_IN(t):
-    r'in'
-    return t
-
-
-def t_DO(t):
-    r'do'
-    return t
-
-
-def t_ENDFOR(t):
-    r'endfor'
+def t_ID(t):
+    r'[a-zA-Z_][a-zA-Z_0-9]*' #To change
+    t.type = reserved.get(t.value, 'ID')
     return t
 
 
