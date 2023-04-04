@@ -80,7 +80,29 @@ def p_error(p):
         parser.errok()
     else:
         print("Syntax error at EOF")
+        
+        
 
+def p_string_expression(p):
+    var =''
+    """string_expression : string|
+                           variable|
+                           string_expression.string_expression                         
+    """
+    if (type(p) == str):
+        r =p
+    elif p[0] in list(range(0,10)):
+        p_error(p) # The case where the variable can't start with a digit.
+    else:
+        for letter in p:
+            if (letter  in list(range(0,10))   #The case where the letter in variable is a digit
+            or  97<=ord(letter)<=122           # The case where the letter in variable is lowercase
+            or  65 <= ord(letter) <= 90        # The case where the letter in  variable is uppercase
+            or ord(letter) == 95):             # The case where the letter in  variable is underscore
+                var += letter
+        return var
+    
+                
 #Testing
 if __name__ == "__main__":
     lexer = lex.lex()
