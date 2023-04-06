@@ -1,6 +1,10 @@
 import ply.lex as lex
 import ply.yacc as yacc
 
+
+# Token Analysis
+
+
 reserved = {
     'print': 'PRINT',
     'for': 'FOR',
@@ -9,35 +13,40 @@ reserved = {
     'endfor': 'ENDFOR'
 }
 
+
+literals = ['<', '>', ';']
+
+
 tokens = [      
     'DUMBO_MARK',
-    'SEMICOLON',
     'ASSIGN',
     'LETTERS',
     'NUMBERS',
     'SYMBOLS',
     'SYMBOLS_NO_BRACKETS',
-    'ID'
+    'ID',
+    'TXT'
 ] + list(reserved.values())
 
-#Tokens defined by strings are added by sorting them in order of
-#decreasing regular expression length (longer expressions are added first).
+# Tokens defined by strings are added by sorting them in order of
+# decreasing regular expression length (longer expressions are added first).
 t_DUMBO_MARK = r'(\{\{)|(\}\})'
-t_SEMICOLON = r';'
 t_LETTERS = r'[a-zA-Z]'
 t_NUMBERS = r'\d'
 t_SYMBOLS = r'\W'
-t_SYMBOLS_NO_BRACKETS = r'[^a-zA-Z0-9{}]'  #Might replace that one with a regex for simple brackets
+t_SYMBOLS_NO_BRACKETS = r'[^a-zA-Z0-9{}]'
+t_TXT = r'[^{]+'
 
-#All tokens defined by functions are added first in the same order as 
-#they appear in the lexer file
+
+# All tokens defined by functions are added first in the same order as
+# they appear in the lexer file
 def t_ASSIGN(t):
     r':='
     return t
 
 
 def t_ID(t):
-    r'[a-zA-Z_][a-zA-Z_0-9]*' #To change
+    r'[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = reserved.get(t.value, 'ID')
     return t
 
@@ -48,29 +57,66 @@ def t_newline(t):
     return t
 
 
+# Error handling rule
 def t_error(t):
-    print("Illegalcharacter'%s" %t.value[0])
-    t.lexer.skipe(1)
+    print("Illegal character '%s'" % t.value[0])
+    t.lexer.skip(1)
 
 
 t_ignore = ' \t'
 
 
+# Syntaxical Analysis
+
 def p_programme(p):
     '''programme : txt
                  | txt programme
-                 | dumbo_bloc 
+                 | dumbo_bloc
                  | dumbo_bloc programme'''
-    if p[1] == 'txt': #Not sure for the process 
+    if p[1] == 'txt':
         if len(p) == 2:
             p[0] = p[1]
-        else:
+        elif len(p) == 3:
             p[0] = p[1] + p[2]
     elif p[1] == 'dumbo_bloc':
         if len(p) == 2:
             p[0] = p[1]
-        else:
+        elif len(p) == 3:
             p[0] = p[1] + p[2]
+
+
+def p_txt(p):
+    '''txt : TXT'''
+    p[0] = p[1]
+
+
+def p_dumbo_bloc(p):
+    '''dumbo_bloc : DUMBO_MARK expression_list DUMBO_MARK'''
+    if p[1] == '{{' and p[3] == '}}':
+        p[0] = p[2]
+
+
+def p_expression_list(p):
+    '''expression_list : expression ';' expression_list
+                       | expression ';' '''
+    if len(p) == 3:
+        p[0] = p[1]
+    elif len(p) == 4:
+        p[0] = p[1] + p[3]
+
+
+def p_expression_print(p):
+    '''expression : ID string_expression'''
+    if p[1] == 'print':
+        p[0] = p[2]
+
+
+def p_expression_for(p):
+    '''expression : ID variable ID string_list ID expression_list ID
+                  | ID variable ID variable ID expression_list ID'''
+    if p[1] == 'for' and p[3] == 'in' and p[5] == 'do' and p[7] == 'endfor':
+        for p[2] in p[4]:
+            p[0] += p[6]
 
 
 def p_error(p):
@@ -81,10 +127,10 @@ def p_error(p):
     else:
         print("Syntax error at EOF")
 
-#Testing
+
+# Testing
 if __name__ == "__main__":
     lexer = lex.lex()
     parser = yacc.yacc()
-    lexer.input("{|}print print {{ }} |}<  >/ ;; := \" \'")
-    for token in lex.lexer:
-        print("line %d : %s (%s)" % (token.lineno, token.type, token.value))
+    result = yacc.parse("string", debug=True) 
+    print(result)
