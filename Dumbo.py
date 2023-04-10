@@ -38,8 +38,8 @@ t_NUMBERS = r'\d'
 t_SYMBOLS = r'\W'
 t_SYMBOLS_NO_BRACKETS = r'[^a-zA-Z0-9{}]'
 t_TXT = r'[^{]+'
-t_STRING = r'[\'\']+'
-t_VARIABLE =r'[^0-9a-zA-Z_]'
+t_STRING = r'[\'\']+'  # Wrong
+t_VARIABLE =r'[^0-9a-zA-Z_]'    # Wrong
 
 
 # All tokens defined by functions are added first in the same order as
@@ -72,21 +72,22 @@ t_ignore = ' \t'
 
 # Syntaxical Analysis
 
-def p_programme(p):
+def p_programme_txt(p):
     '''programme : txt
-                 | txt programme
-                 | dumbo_bloc
+                 | txt programme'''
+    if len(p) == 2:
+        p[0] = p[1]
+    elif len(p) == 3:
+        p[0] = p[1] + p[2]
+
+
+def p_programme_dumbo(p):
+    '''programme : dumbo_bloc
                  | dumbo_bloc programme'''
-    if p[1] == 'txt':
-        if len(p) == 2:
-            p[0] = p[1]
-        elif len(p) == 3:
-            p[0] = p[1] + p[2]
-    elif p[1] == 'dumbo_bloc':
-        if len(p) == 2:
-            p[0] = p[1]
-        elif len(p) == 3:
-            p[0] = p[1] + p[2]
+    if len(p) == 2:
+        p[0] = p[1]
+    elif len(p) == 3:
+        p[0] = p[1] + p[2]
 
 
 def p_txt(p):
@@ -135,19 +136,20 @@ def p_string_expression(p):
     '''
      string_expression: string
                        |variable
-                       |string_expression.string_expression
+                       |string_expression.string_expression 
     '''
+    # Expression is also wrong, you need to put spaces
 
-    if p[1]=='string':
+    if p[1]=='string':          # Wrong
         p[0]=p[1]
-    elif p[1]=='variable':
+    elif p[1]=='variable':      # Wrong
         p[0]=p[1]
     else:
         p[0]= p[1] +  p[2]
 
 def p_string_list(p):
-   '''  string_list: string_list_interior'''
-   if p[1]== 'string_list_interior':
+   '''  string_list: string_list_interior''' # Expression wrong
+   if p[1]== 'string_list_interior':    # No point
        p[0] = p[1]
 
 
@@ -156,15 +158,17 @@ def p_string_list_interior(p):
     string_list_interior: string
                           |string ',' string_list_interior
     '''
+    # ' is not a literal so won't work
     if len(p) == 2:
         p[0]= p[1]
     else:
-        len(p)==4
+        len(p)==4   # ????
         p[0]= p[1] + p[3]
 
 def p_variable(p):
     '''variable : VARIABLE'''
     p[0] = p[1]
+
 
 def p_string(p):
     '''string : STRING'''
@@ -175,5 +179,5 @@ def p_string(p):
 if __name__ == "__main__":
     lexer = lex.lex()
     parser = yacc.yacc()
-    result = yacc.parse("string", debug=True) 
+    result = yacc.parse("string", debug=True)
     print(result)
