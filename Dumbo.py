@@ -1,7 +1,6 @@
 import ply.lex as lex
 import ply.yacc as yacc
 
-
 # Token Analysis
 
 
@@ -13,22 +12,20 @@ reserved = {
     'endfor': 'ENDFOR'
 }
 
-
 literals = ['<', '>', ';']
 
-
-tokens = [      
-    'DUMBO_MARK',
-    'ASSIGN',
-    'LETTERS',
-    'NUMBERS',
-    'SYMBOLS',
-    'SYMBOLS_NO_BRACKETS',
-    'ID',
-    'TXT'
-    'STRING'
-    'VARIABLE'
-] + list(reserved.values())
+tokens = [
+             'DUMBO_MARK',
+             'ASSIGN',
+             'LETTERS',
+             'NUMBERS',
+             'SYMBOLS',
+             'SYMBOLS_NO_BRACKETS',
+             'ID',
+             'TXT'
+             'STRING'
+             'VARIABLE'
+         ] + list(reserved.values())
 
 # Tokens defined by strings are added by sorting them in order of
 # decreasing regular expression length (longer expressions are added first).
@@ -38,8 +35,8 @@ t_NUMBERS = r'\d'
 t_SYMBOLS = r'\W'
 t_SYMBOLS_NO_BRACKETS = r'[^a-zA-Z0-9{}]'
 t_TXT = r'[^{]+'
-t_STRING = r'[\'\']+'
-t_VARIABLE =r'[^0-9a-zA-Z_]'
+t_STRING = r'.*'  # The correct expression is '.*', not only .*
+t_VARIABLE = r'[^0-9]\w+'
 
 
 # All tokens defined by functions are added first in the same order as
@@ -131,40 +128,39 @@ def p_error(p):
     else:
         print("Syntax error at EOF")
 
-def p_string_expression(p):
-    '''
-     string_expression: string
-                       |variable
-                       |string_expression.string_expression
-    '''
 
-    if p[1]=='string':
-        p[0]=p[1]
-    elif p[1]=='variable':
-        p[0]=p[1]
+def p_string_expression(p):
+    '''string_expression : string
+                         | variable
+                         | string_expression.string_expression'''
+
+    if p[1] == 'string':
+        p[0] = p[1]
+    elif p[1] == 'variable':
+        p[0] = p[1]
     else:
-        p[0]= p[1] +  p[2]
+        p[0] = p[1] + p[2]
+
 
 def p_string_list(p):
-   '''  string_list: string_list_interior'''
-   if p[1]== 'string_list_interior':
-       p[0] = p[1]
+    '''  string_list: string_list_interior'''
+    if p[1] == 'string_list_interior':
+        p_string_list_interior(p)
 
 
 def p_string_list_interior(p):
-    '''
-    string_list_interior: string
-                          |string ',' string_list_interior
-    '''
+    '''string_list_interior : string
+                            | string ',' string_list_interior'''
     if len(p) == 2:
-        p[0]= p[1]
+        p[0] = p[1]
     else:
-        len(p)==4
-        p[0]= p[1] + p[3]
+        p[0] = p[1] + p[3]
+
 
 def p_variable(p):
     '''variable : VARIABLE'''
     p[0] = p[1]
+
 
 def p_string(p):
     '''string : STRING'''
@@ -175,5 +171,5 @@ def p_string(p):
 if __name__ == "__main__":
     lexer = lex.lex()
     parser = yacc.yacc()
-    result = yacc.parse("string", debug=True) 
+    result = yacc.parse("string", debug=True)
     print(result)
