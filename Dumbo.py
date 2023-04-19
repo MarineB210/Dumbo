@@ -151,7 +151,7 @@ def p_string_list(p):
 
 def p_string_list_interior(p):
     '''string_list_interior : string
-                               | string ',' string_list_interior'''
+                            | string ',' string_list_interior'''
     if len(p) == 2:
         p[0] = p[1]
     else:
