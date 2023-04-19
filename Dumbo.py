@@ -69,21 +69,22 @@ t_ignore = ' \t'
 
 # Syntaxical Analysis
 
-def p_programme(p):
+def p_programme_txt(p):
     '''programme : txt
-                 | txt programme
-                 | dumbo_bloc
+                 | txt programme'''
+    if len(p) == 2:
+        p[0] = p[1]
+    elif len(p) == 3:
+        p[0] = p[1] + p[2]
+
+
+def p_programme_dumbo(p):
+    '''programme : dumbo_bloc
                  | dumbo_bloc programme'''
-    if p[1] == 'txt':
-        if len(p) == 2:
-            p[0] = p[1]
-        elif len(p) == 3:
-            p[0] = p[1] + p[2]
-    elif p[1] == 'dumbo_bloc':
-        if len(p) == 2:
-            p[0] = p[1]
-        elif len(p) == 3:
-            p[0] = p[1] + p[2]
+    if len(p) == 2:
+        p[0] = p[1]
+    elif len(p) == 3:
+        p[0] = p[1] + p[2]
 
 
 def p_txt(p):
@@ -150,7 +151,7 @@ def p_string_list(p):
 
 def p_string_list_interior(p):
     '''string_list_interior : string
-                            | string ',' string_list_interior'''
+                               | string ',' string_list_interior'''
     if len(p) == 2:
         p[0] = p[1]
     else:
