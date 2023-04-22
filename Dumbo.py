@@ -1,8 +1,13 @@
+import sys
 import ply.lex as lex
 import ply.yacc as yacc
 
 # Token Analysis
 
+states = (
+    ('state1','exclusive'), # need to find a better name 
+    ('string','exclusive')
+)
 
 reserved = {
     'print': 'PRINT',
@@ -12,62 +17,96 @@ reserved = {
     'endfor': 'ENDFOR'
 }
 
-literals = ['<', '>', ';']
+literals = ['<', '>', '.', ',']
 
 tokens = [
-             'DUMBO_MARK',
+             'DUMBO_START',
+             'DUMBO_END',
+             'QUOTE',
              'ASSIGN',
-             'LETTERS',
-             'NUMBERS',
-             'SYMBOLS',
-             'SYMBOLS_NO_BRACKETS',
              'ID',
-             'TXT'
-             'STRING'
-             'VARIABLE'
+             'TXT',
+             'LPARENTHESE',
+             'RPARENTHESE',
+             'STRING',
+             'SEMICOLON'
          ] + list(reserved.values())
 
-# Tokens defined by strings are added by sorting them in order of
-# decreasing regular expression length (longer expressions are added first).
-t_DUMBO_MARK = r'(\{\{)|(\}\})'
-t_LETTERS = r'[a-zA-Z]'
-t_NUMBERS = r'\d'
-t_SYMBOLS = r'\W'
-t_SYMBOLS_NO_BRACKETS = r'[^a-zA-Z0-9{}]'
-t_TXT = r'[^{]+'
-t_STRING = r'.*'  # The correct expression is '.*', not only .*
-t_VARIABLE = r'[^0-9]\w+'
 
+# INITIAL STATE
 
-# All tokens defined by functions are added first in the same order as
-# they appear in the lexer file
-def t_ASSIGN(t):
-    r':='
+def t_DUMBO_START(t) :
+    r'(\{\{)'
+    t.lexer.begin('state1')
     return t
 
+def t_TXT(t):
+    r'[^({{)]+'
+    return t
 
-def t_ID(t):
+# STATE 1
+
+def t_state1_DUMBO_END(t):
+    r'(\}\})'
+    t.lexer.begin('INITIAL')
+    return t
+
+def t_state1_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = reserved.get(t.value, 'ID')
     return t
 
+def t_state1_QUOTE(t):
+    r'\''
+    t.lexer.begin('string')
+    return t
 
-def t_newline(t):
-    r'\n+'
-    t.value = float(t.value)
+def t_state1_ASSIGN(t):
+    r':='
+    return t
+
+def t_state1_LPARENTHESE(t):
+    r'\('
+    return t
+
+def t_state1_RPARENTHESE(t):
+    r'\)'
+    return t
+
+def t_state1_SEMICOLON(t):
+    r';'
+    return t
+
+# STRING STATE
+
+def t_string_STRING(t):
+    r'[^\']+'
+    return t
+
+def t_string_QUOTE(t):
+    r'\''
+    t.lexer.begin('state1')
     return t
 
 
+
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)
+
+
 # Error handling rule
-def t_error(t):
+def t_ANY_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 
-t_ignore = ' \t'
+t_ANY_ignore = ' \t\n'
 
 
 # Syntaxical Analysis
+
+dico = {}
 
 def p_programme_txt(p):
     '''programme : txt
@@ -93,14 +132,14 @@ def p_txt(p):
 
 
 def p_dumbo_bloc(p):
-    '''dumbo_bloc : DUMBO_MARK expression_list DUMBO_MARK'''
+    '''dumbo_bloc : DUMBO_START expression_list DUMBO_END'''
     if p[1] == '{{' and p[3] == '}}':
         p[0] = p[2]
 
 
 def p_expression_list(p):
-    '''expression_list : expression ';' expression_list
-                       | expression ';' '''
+    '''expression_list : expression SEMICOLON expression_list
+                       | expression SEMICOLON'''
     if len(p) == 3:
         p[0] = p[1]
     elif len(p) == 4:
@@ -121,6 +160,48 @@ def p_expression_for(p):
             p[0] += p[6]
 
 
+def p_expression_var(p):
+    '''expression : variable ASSIGN string_expression
+                  | variable ASSIGN string_list'''
+    if len(p) == 4:
+        dico[p[1]] = p[3]        
+
+
+def p_string_expression(p):
+    '''string_expression : string
+                         | variable
+                         | string_expression '.' string_expression '''
+    if len(p) == 2:
+        p[0] = p[1]
+    elif len(p) == 4:
+        p[0] = p[1] + p[3]
+
+
+def p_string_list(p):
+    '''string_list : LPARENTHESE string_list_interior RPARENTHESE '''
+    if len(p) == 2:
+        p[0] = p[2]
+
+
+def p_string_list_interior(p):
+    '''string_list_interior : string
+                            | string ',' string_list_interior'''
+    if len(p) == 2:
+        p[0] = p[1]
+    elif len(p) == 4:
+        p[0] = [p[1], p[3]]
+
+
+def p_variable(p):
+    '''variable : ID'''
+    p[0] = p[1]
+
+
+def p_string(p):
+    '''string : QUOTE STRING QUOTE'''
+    p[0] = p[1]
+
+
 def p_error(p):
     if p:
         print("Syntax error at token", p.type)
@@ -130,47 +211,19 @@ def p_error(p):
         print("Syntax error at EOF")
 
 
-def p_string_expression(p):
-    '''string_expression : string
-                         | variable
-                         | string_expression.string_expression'''
+# SEMANTIC ANALYSIS
 
-    if p[1] == 'string':
-        p[0] = p[1]
-    elif p[1] == 'variable':
-        p[0] = p[1]
-    else:
-        p[0] = p[1] + p[2]
-
-
-def p_string_list(p):
-    '''  string_list: string_list_interior'''
-    if p[1] == 'string_list_interior':
-        p_string_list_interior(p)
-
-
-def p_string_list_interior(p):
-    '''string_list_interior : string
-                            | string ',' string_list_interior'''
-    if len(p) == 2:
-        p[0] = p[1]
-    else:
-        p[0] = p[1] + p[3]
-
-
-def p_variable(p):
-    '''variable : VARIABLE'''
-    p[0] = p[1]
-
-
-def p_string(p):
-    '''string : STRING'''
-    p[0] = p[1]
+#TO-DO
 
 
 # Testing
 if __name__ == "__main__":
     lexer = lex.lex()
     parser = yacc.yacc()
-    result = yacc.parse("string", debug=True)
+
+    dumbo = open(sys.argv[1]).read()
+    yacc.parse(dumbo, debug=True)
+    print("------------------------------------")
+    template = open(sys.argv[2]).read()    
+    result = yacc.parse(template, debug=True)
     print(result)

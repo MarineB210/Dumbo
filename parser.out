@@ -1,0 +1,539 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    DO
+    ENDFOR
+    FOR
+    IN
+    PRINT
+
+Grammar
+
+Rule 0     S' -> programme
+Rule 1     programme -> txt
+Rule 2     programme -> txt programme
+Rule 3     programme -> dumbo_bloc
+Rule 4     programme -> dumbo_bloc programme
+Rule 5     txt -> TXT
+Rule 6     dumbo_bloc -> DUMBO_START expression_list DUMBO_END
+Rule 7     expression_list -> expression SEMICOLON expression_list
+Rule 8     expression_list -> expression SEMICOLON
+Rule 9     expression -> ID string_expression
+Rule 10    expression -> ID variable ID string_list ID expression_list ID
+Rule 11    expression -> ID variable ID variable ID expression_list ID
+Rule 12    expression -> variable ASSIGN string_expression
+Rule 13    expression -> variable ASSIGN string_list
+Rule 14    string_expression -> string
+Rule 15    string_expression -> variable
+Rule 16    string_expression -> string_expression . string_expression
+Rule 17    string_list -> LPARENTHESE string_list_interior RPARENTHESE
+Rule 18    string_list_interior -> string
+Rule 19    string_list_interior -> string , string_list_interior
+Rule 20    variable -> ID
+Rule 21    string -> QUOTE STRING QUOTE
+
+Terminals, with rules where they appear
+
+,                    : 19
+.                    : 16
+ASSIGN               : 12 13
+DO                   : 
+DUMBO_END            : 6
+DUMBO_START          : 6
+ENDFOR               : 
+FOR                  : 
+ID                   : 9 10 10 10 10 11 11 11 11 20
+IN                   : 
+LPARENTHESE          : 17
+PRINT                : 
+QUOTE                : 21 21
+RPARENTHESE          : 17
+SEMICOLON            : 7 8
+STRING               : 21
+TXT                  : 5
+error                : 
+
+Nonterminals, with rules where they appear
+
+dumbo_bloc           : 3 4
+expression           : 7 8
+expression_list      : 6 7 10 11
+programme            : 2 4 0
+string               : 14 18 19
+string_expression    : 9 12 16 16
+string_list          : 10 13
+string_list_interior : 17 19
+txt                  : 1 2
+variable             : 10 11 11 12 13 15
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . programme
+    (1) programme -> . txt
+    (2) programme -> . txt programme
+    (3) programme -> . dumbo_bloc
+    (4) programme -> . dumbo_bloc programme
+    (5) txt -> . TXT
+    (6) dumbo_bloc -> . DUMBO_START expression_list DUMBO_END
+
+    TXT             shift and go to state 4
+    DUMBO_START     shift and go to state 5
+
+    programme                      shift and go to state 1
+    txt                            shift and go to state 2
+    dumbo_bloc                     shift and go to state 3
+
+state 1
+
+    (0) S' -> programme .
+
+
+
+state 2
+
+    (1) programme -> txt .
+    (2) programme -> txt . programme
+    (1) programme -> . txt
+    (2) programme -> . txt programme
+    (3) programme -> . dumbo_bloc
+    (4) programme -> . dumbo_bloc programme
+    (5) txt -> . TXT
+    (6) dumbo_bloc -> . DUMBO_START expression_list DUMBO_END
+
+    $end            reduce using rule 1 (programme -> txt .)
+    TXT             shift and go to state 4
+    DUMBO_START     shift and go to state 5
+
+    txt                            shift and go to state 2
+    programme                      shift and go to state 6
+    dumbo_bloc                     shift and go to state 3
+
+state 3
+
+    (3) programme -> dumbo_bloc .
+    (4) programme -> dumbo_bloc . programme
+    (1) programme -> . txt
+    (2) programme -> . txt programme
+    (3) programme -> . dumbo_bloc
+    (4) programme -> . dumbo_bloc programme
+    (5) txt -> . TXT
+    (6) dumbo_bloc -> . DUMBO_START expression_list DUMBO_END
+
+    $end            reduce using rule 3 (programme -> dumbo_bloc .)
+    TXT             shift and go to state 4
+    DUMBO_START     shift and go to state 5
+
+    dumbo_bloc                     shift and go to state 3
+    programme                      shift and go to state 7
+    txt                            shift and go to state 2
+
+state 4
+
+    (5) txt -> TXT .
+
+    TXT             reduce using rule 5 (txt -> TXT .)
+    DUMBO_START     reduce using rule 5 (txt -> TXT .)
+    $end            reduce using rule 5 (txt -> TXT .)
+
+
+state 5
+
+    (6) dumbo_bloc -> DUMBO_START . expression_list DUMBO_END
+    (7) expression_list -> . expression SEMICOLON expression_list
+    (8) expression_list -> . expression SEMICOLON
+    (9) expression -> . ID string_expression
+    (10) expression -> . ID variable ID string_list ID expression_list ID
+    (11) expression -> . ID variable ID variable ID expression_list ID
+    (12) expression -> . variable ASSIGN string_expression
+    (13) expression -> . variable ASSIGN string_list
+    (20) variable -> . ID
+
+    ID              shift and go to state 10
+
+    expression_list                shift and go to state 8
+    expression                     shift and go to state 9
+    variable                       shift and go to state 11
+
+state 6
+
+    (2) programme -> txt programme .
+
+    $end            reduce using rule 2 (programme -> txt programme .)
+
+
+state 7
+
+    (4) programme -> dumbo_bloc programme .
+
+    $end            reduce using rule 4 (programme -> dumbo_bloc programme .)
+
+
+state 8
+
+    (6) dumbo_bloc -> DUMBO_START expression_list . DUMBO_END
+
+    DUMBO_END       shift and go to state 12
+
+
+state 9
+
+    (7) expression_list -> expression . SEMICOLON expression_list
+    (8) expression_list -> expression . SEMICOLON
+
+    SEMICOLON       shift and go to state 13
+
+
+state 10
+
+    (9) expression -> ID . string_expression
+    (10) expression -> ID . variable ID string_list ID expression_list ID
+    (11) expression -> ID . variable ID variable ID expression_list ID
+    (20) variable -> ID .
+    (14) string_expression -> . string
+    (15) string_expression -> . variable
+    (16) string_expression -> . string_expression . string_expression
+    (20) variable -> . ID
+    (21) string -> . QUOTE STRING QUOTE
+
+    ASSIGN          reduce using rule 20 (variable -> ID .)
+    ID              shift and go to state 14
+    QUOTE           shift and go to state 18
+
+    string_expression              shift and go to state 15
+    variable                       shift and go to state 16
+    string                         shift and go to state 17
+
+state 11
+
+    (12) expression -> variable . ASSIGN string_expression
+    (13) expression -> variable . ASSIGN string_list
+
+    ASSIGN          shift and go to state 19
+
+
+state 12
+
+    (6) dumbo_bloc -> DUMBO_START expression_list DUMBO_END .
+
+    TXT             reduce using rule 6 (dumbo_bloc -> DUMBO_START expression_list DUMBO_END .)
+    DUMBO_START     reduce using rule 6 (dumbo_bloc -> DUMBO_START expression_list DUMBO_END .)
+    $end            reduce using rule 6 (dumbo_bloc -> DUMBO_START expression_list DUMBO_END .)
+
+
+state 13
+
+    (7) expression_list -> expression SEMICOLON . expression_list
+    (8) expression_list -> expression SEMICOLON .
+    (7) expression_list -> . expression SEMICOLON expression_list
+    (8) expression_list -> . expression SEMICOLON
+    (9) expression -> . ID string_expression
+    (10) expression -> . ID variable ID string_list ID expression_list ID
+    (11) expression -> . ID variable ID variable ID expression_list ID
+    (12) expression -> . variable ASSIGN string_expression
+    (13) expression -> . variable ASSIGN string_list
+    (20) variable -> . ID
+
+  ! shift/reduce conflict for ID resolved as shift
+    DUMBO_END       reduce using rule 8 (expression_list -> expression SEMICOLON .)
+    ID              shift and go to state 10
+
+  ! ID              [ reduce using rule 8 (expression_list -> expression SEMICOLON .) ]
+
+    expression                     shift and go to state 9
+    expression_list                shift and go to state 20
+    variable                       shift and go to state 11
+
+state 14
+
+    (20) variable -> ID .
+
+    ID              reduce using rule 20 (variable -> ID .)
+    .               reduce using rule 20 (variable -> ID .)
+    SEMICOLON       reduce using rule 20 (variable -> ID .)
+
+
+state 15
+
+    (9) expression -> ID string_expression .
+    (16) string_expression -> string_expression . . string_expression
+
+    SEMICOLON       reduce using rule 9 (expression -> ID string_expression .)
+    .               shift and go to state 21
+
+
+state 16
+
+    (10) expression -> ID variable . ID string_list ID expression_list ID
+    (11) expression -> ID variable . ID variable ID expression_list ID
+    (15) string_expression -> variable .
+
+    ID              shift and go to state 22
+    .               reduce using rule 15 (string_expression -> variable .)
+    SEMICOLON       reduce using rule 15 (string_expression -> variable .)
+
+
+state 17
+
+    (14) string_expression -> string .
+
+    .               reduce using rule 14 (string_expression -> string .)
+    SEMICOLON       reduce using rule 14 (string_expression -> string .)
+
+
+state 18
+
+    (21) string -> QUOTE . STRING QUOTE
+
+    STRING          shift and go to state 23
+
+
+state 19
+
+    (12) expression -> variable ASSIGN . string_expression
+    (13) expression -> variable ASSIGN . string_list
+    (14) string_expression -> . string
+    (15) string_expression -> . variable
+    (16) string_expression -> . string_expression . string_expression
+    (17) string_list -> . LPARENTHESE string_list_interior RPARENTHESE
+    (21) string -> . QUOTE STRING QUOTE
+    (20) variable -> . ID
+
+    LPARENTHESE     shift and go to state 27
+    QUOTE           shift and go to state 18
+    ID              shift and go to state 14
+
+    variable                       shift and go to state 24
+    string_expression              shift and go to state 25
+    string_list                    shift and go to state 26
+    string                         shift and go to state 17
+
+state 20
+
+    (7) expression_list -> expression SEMICOLON expression_list .
+
+    DUMBO_END       reduce using rule 7 (expression_list -> expression SEMICOLON expression_list .)
+    ID              reduce using rule 7 (expression_list -> expression SEMICOLON expression_list .)
+
+
+state 21
+
+    (16) string_expression -> string_expression . . string_expression
+    (14) string_expression -> . string
+    (15) string_expression -> . variable
+    (16) string_expression -> . string_expression . string_expression
+    (21) string -> . QUOTE STRING QUOTE
+    (20) variable -> . ID
+
+    QUOTE           shift and go to state 18
+    ID              shift and go to state 14
+
+    string_expression              shift and go to state 28
+    string                         shift and go to state 17
+    variable                       shift and go to state 24
+
+state 22
+
+    (10) expression -> ID variable ID . string_list ID expression_list ID
+    (11) expression -> ID variable ID . variable ID expression_list ID
+    (17) string_list -> . LPARENTHESE string_list_interior RPARENTHESE
+    (20) variable -> . ID
+
+    LPARENTHESE     shift and go to state 27
+    ID              shift and go to state 14
+
+    variable                       shift and go to state 29
+    string_list                    shift and go to state 30
+
+state 23
+
+    (21) string -> QUOTE STRING . QUOTE
+
+    QUOTE           shift and go to state 31
+
+
+state 24
+
+    (15) string_expression -> variable .
+
+    .               reduce using rule 15 (string_expression -> variable .)
+    SEMICOLON       reduce using rule 15 (string_expression -> variable .)
+
+
+state 25
+
+    (12) expression -> variable ASSIGN string_expression .
+    (16) string_expression -> string_expression . . string_expression
+
+    SEMICOLON       reduce using rule 12 (expression -> variable ASSIGN string_expression .)
+    .               shift and go to state 21
+
+
+state 26
+
+    (13) expression -> variable ASSIGN string_list .
+
+    SEMICOLON       reduce using rule 13 (expression -> variable ASSIGN string_list .)
+
+
+state 27
+
+    (17) string_list -> LPARENTHESE . string_list_interior RPARENTHESE
+    (18) string_list_interior -> . string
+    (19) string_list_interior -> . string , string_list_interior
+    (21) string -> . QUOTE STRING QUOTE
+
+    QUOTE           shift and go to state 18
+
+    string_list_interior           shift and go to state 32
+    string                         shift and go to state 33
+
+state 28
+
+    (16) string_expression -> string_expression . string_expression .
+    (16) string_expression -> string_expression . . string_expression
+
+  ! shift/reduce conflict for . resolved as shift
+    SEMICOLON       reduce using rule 16 (string_expression -> string_expression . string_expression .)
+    .               shift and go to state 21
+
+  ! .               [ reduce using rule 16 (string_expression -> string_expression . string_expression .) ]
+
+
+state 29
+
+    (11) expression -> ID variable ID variable . ID expression_list ID
+
+    ID              shift and go to state 34
+
+
+state 30
+
+    (10) expression -> ID variable ID string_list . ID expression_list ID
+
+    ID              shift and go to state 35
+
+
+state 31
+
+    (21) string -> QUOTE STRING QUOTE .
+
+    .               reduce using rule 21 (string -> QUOTE STRING QUOTE .)
+    SEMICOLON       reduce using rule 21 (string -> QUOTE STRING QUOTE .)
+    ,               reduce using rule 21 (string -> QUOTE STRING QUOTE .)
+    RPARENTHESE     reduce using rule 21 (string -> QUOTE STRING QUOTE .)
+
+
+state 32
+
+    (17) string_list -> LPARENTHESE string_list_interior . RPARENTHESE
+
+    RPARENTHESE     shift and go to state 36
+
+
+state 33
+
+    (18) string_list_interior -> string .
+    (19) string_list_interior -> string . , string_list_interior
+
+    RPARENTHESE     reduce using rule 18 (string_list_interior -> string .)
+    ,               shift and go to state 37
+
+
+state 34
+
+    (11) expression -> ID variable ID variable ID . expression_list ID
+    (7) expression_list -> . expression SEMICOLON expression_list
+    (8) expression_list -> . expression SEMICOLON
+    (9) expression -> . ID string_expression
+    (10) expression -> . ID variable ID string_list ID expression_list ID
+    (11) expression -> . ID variable ID variable ID expression_list ID
+    (12) expression -> . variable ASSIGN string_expression
+    (13) expression -> . variable ASSIGN string_list
+    (20) variable -> . ID
+
+    ID              shift and go to state 10
+
+    variable                       shift and go to state 11
+    expression_list                shift and go to state 38
+    expression                     shift and go to state 9
+
+state 35
+
+    (10) expression -> ID variable ID string_list ID . expression_list ID
+    (7) expression_list -> . expression SEMICOLON expression_list
+    (8) expression_list -> . expression SEMICOLON
+    (9) expression -> . ID string_expression
+    (10) expression -> . ID variable ID string_list ID expression_list ID
+    (11) expression -> . ID variable ID variable ID expression_list ID
+    (12) expression -> . variable ASSIGN string_expression
+    (13) expression -> . variable ASSIGN string_list
+    (20) variable -> . ID
+
+    ID              shift and go to state 10
+
+    variable                       shift and go to state 11
+    expression_list                shift and go to state 39
+    expression                     shift and go to state 9
+
+state 36
+
+    (17) string_list -> LPARENTHESE string_list_interior RPARENTHESE .
+
+    SEMICOLON       reduce using rule 17 (string_list -> LPARENTHESE string_list_interior RPARENTHESE .)
+    ID              reduce using rule 17 (string_list -> LPARENTHESE string_list_interior RPARENTHESE .)
+
+
+state 37
+
+    (19) string_list_interior -> string , . string_list_interior
+    (18) string_list_interior -> . string
+    (19) string_list_interior -> . string , string_list_interior
+    (21) string -> . QUOTE STRING QUOTE
+
+    QUOTE           shift and go to state 18
+
+    string                         shift and go to state 33
+    string_list_interior           shift and go to state 40
+
+state 38
+
+    (11) expression -> ID variable ID variable ID expression_list . ID
+
+    ID              shift and go to state 41
+
+
+state 39
+
+    (10) expression -> ID variable ID string_list ID expression_list . ID
+
+    ID              shift and go to state 42
+
+
+state 40
+
+    (19) string_list_interior -> string , string_list_interior .
+
+    RPARENTHESE     reduce using rule 19 (string_list_interior -> string , string_list_interior .)
+
+
+state 41
+
+    (11) expression -> ID variable ID variable ID expression_list ID .
+
+    SEMICOLON       reduce using rule 11 (expression -> ID variable ID variable ID expression_list ID .)
+
+
+state 42
+
+    (10) expression -> ID variable ID string_list ID expression_list ID .
+
+    SEMICOLON       reduce using rule 10 (expression -> ID variable ID string_list ID expression_list ID .)
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for ID in state 13 resolved as shift
+WARNING: shift/reduce conflict for . in state 28 resolved as shift
