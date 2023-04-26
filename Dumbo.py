@@ -44,6 +44,8 @@ def t_TXT(t):
     r'[^({{)]+'
     return t
 
+t_ignore = ' \t \n'
+
 # STATE 1
 
 def t_state1_DUMBO_END(t):
@@ -77,6 +79,9 @@ def t_state1_SEMICOLON(t):
     r';'
     return t
 
+t_state1_ignore = ' \t \n'
+
+
 # STRING STATE
 
 def t_string_STRING(t):
@@ -101,12 +106,12 @@ def t_ANY_error(t):
     t.lexer.skip(1)
 
 
-t_ANY_ignore = ' \t\n'
-
-
 # Syntaxical Analysis
 
+# CONFLICT IN STATE 13 AND 28
+
 dico = {}
+temp_dico = {}
 
 def p_programme_txt(p):
     '''programme : txt
@@ -115,7 +120,7 @@ def p_programme_txt(p):
         p[0] = p[1]
     elif len(p) == 3:
         p[0] = p[1] + p[2]
-
+    print(13)
 
 def p_programme_dumbo(p):
     '''programme : dumbo_bloc
@@ -124,18 +129,18 @@ def p_programme_dumbo(p):
         p[0] = p[1]
     elif len(p) == 3:
         p[0] = p[1] + p[2]
-
+    print(12)
 
 def p_txt(p):
     '''txt : TXT'''
     p[0] = p[1]
-
+    print(11)
 
 def p_dumbo_bloc(p):
     '''dumbo_bloc : DUMBO_START expression_list DUMBO_END'''
     if p[1] == '{{' and p[3] == '}}':
         p[0] = p[2]
-
+    print(10)
 
 def p_expression_list(p):
     '''expression_list : expression SEMICOLON expression_list
@@ -144,28 +149,32 @@ def p_expression_list(p):
         p[0] = p[1]
     elif len(p) == 4:
         p[0] = p[1] + p[3]
-
+    print(9)
 
 def p_expression_print(p):
-    '''expression : ID string_expression'''
-    if p[1] == 'print':
+    '''expression : PRINT string_expression'''
+    if len(p) == 3:
         p[0] = p[2]
-
+    print(p[2])
 
 def p_expression_for(p):
-    '''expression : ID variable ID string_list ID expression_list ID
-                  | ID variable ID variable ID expression_list ID'''
-    if p[1] == 'for' and p[3] == 'in' and p[5] == 'do' and p[7] == 'endfor':
-        for p[2] in p[4]:
+    '''expression : FOR variable IN string_list DO expression_list ENDFOR
+                  | FOR variable IN variable DO expression_list ENDFOR'''
+    if len(p) == 8:
+        p[0] = ''
+        for i in p[4]:
+            temp_dico[p[2]] = i
+            print(p[6])
             p[0] += p[6]
-
+    print(7)
 
 def p_expression_var(p):
     '''expression : variable ASSIGN string_expression
                   | variable ASSIGN string_list'''
     if len(p) == 4:
-        dico[p[1]] = p[3]        
-
+        dico[p[1]] = p[3]
+        p[0] = ""
+    print(6)
 
 def p_string_expression(p):
     '''string_expression : string
@@ -175,31 +184,38 @@ def p_string_expression(p):
         p[0] = p[1]
     elif len(p) == 4:
         p[0] = p[1] + p[3]
-
+    print(5)
 
 def p_string_list(p):
     '''string_list : LPARENTHESE string_list_interior RPARENTHESE '''
-    if len(p) == 2:
+    if len(p) == 4:
         p[0] = p[2]
-
+    print(4)
 
 def p_string_list_interior(p):
     '''string_list_interior : string
                             | string ',' string_list_interior'''
     if len(p) == 2:
-        p[0] = p[1]
+        p[0] = [p[1]]
     elif len(p) == 4:
-        p[0] = [p[1], p[3]]
+        p[0] = [p[1]] + p[3]
+    print(3)
 
 
 def p_variable(p):
     '''variable : ID'''
-    p[0] = p[1]
-
+    if str(p[1]) in temp_dico:
+        p[0] = temp_dico.get(str(p[1]))
+    elif str(p[1]) in dico :
+        p[0] = dico.get(str(p[1]))
+    else :
+        p[0] = p[1]
+    print(2)
 
 def p_string(p):
     '''string : QUOTE STRING QUOTE'''
-    p[0] = p[1]
+    p[0] = p[2]
+    print(p[2])
 
 
 def p_error(p):
@@ -224,6 +240,7 @@ if __name__ == "__main__":
     dumbo = open(sys.argv[1]).read()
     yacc.parse(dumbo, debug=True)
     print("------------------------------------")
-    template = open(sys.argv[2]).read()    
+    print(dico.items())
+    template = open(sys.argv[2]).read()
     result = yacc.parse(template, debug=True)
     print(result)
