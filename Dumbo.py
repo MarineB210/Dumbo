@@ -5,8 +5,8 @@ import ply.yacc as yacc
 # Token Analysis
 
 states = (
-    ('state1','exclusive'), # need to find a better name 
-    ('string','exclusive')
+    ('state1', 'exclusive'),  # need to find a better name
+    ('string', 'exclusive')
 )
 
 reserved = {
@@ -35,16 +35,19 @@ tokens = [
 
 # INITIAL STATE
 
-def t_DUMBO_START(t) :
+def t_DUMBO_START(t):
     r'(\{\{)'
     t.lexer.begin('state1')
     return t
+
 
 def t_TXT(t):
     r'[^({{)]+'
     return t
 
+
 t_ignore = ' \t \n'
+
 
 # STATE 1
 
@@ -53,31 +56,38 @@ def t_state1_DUMBO_END(t):
     t.lexer.begin('INITIAL')
     return t
 
+
 def t_state1_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     t.type = reserved.get(t.value, 'ID')
     return t
+
 
 def t_state1_QUOTE(t):
     r'\''
     t.lexer.begin('string')
     return t
 
+
 def t_state1_ASSIGN(t):
     r':='
     return t
+
 
 def t_state1_LPARENTHESE(t):
     r'\('
     return t
 
+
 def t_state1_RPARENTHESE(t):
     r'\)'
     return t
 
+
 def t_state1_SEMICOLON(t):
     r';'
     return t
+
 
 t_state1_ignore = ' \t \n'
 
@@ -88,11 +98,11 @@ def t_string_STRING(t):
     r'[^\']+'
     return t
 
+
 def t_string_QUOTE(t):
     r'\''
     t.lexer.begin('state1')
     return t
-
 
 
 def t_newline(t):
@@ -113,6 +123,7 @@ def t_ANY_error(t):
 dico = {}
 temp_dico = {}
 
+
 def p_programme_txt(p):
     '''programme : txt
                  | txt programme'''
@@ -121,6 +132,7 @@ def p_programme_txt(p):
     elif len(p) == 3:
         p[0] = p[1] + p[2]
     print(13)
+
 
 def p_programme_dumbo(p):
     '''programme : dumbo_bloc
@@ -131,10 +143,12 @@ def p_programme_dumbo(p):
         p[0] = p[1].do() + p[2]
     print(12)
 
+
 def p_txt(p):
     '''txt : TXT'''
     p[0] = p[1]
     print(11)
+
 
 def p_dumbo_bloc(p):
     '''dumbo_bloc : DUMBO_START expression_list DUMBO_END'''
@@ -142,14 +156,16 @@ def p_dumbo_bloc(p):
         p[0] = p[2]
     print(10)
 
+
 def p_expression_list(p):
     '''expression_list : expression SEMICOLON expression_list
                        | expression SEMICOLON'''
     if len(p) == 3:
         p[0] = Expression_List(p[1])
     elif len(p) == 4:
-        p[0] = Expression_List(p[1],p[3])
+        p[0] = Expression_List(p[1], p[3])
     print(9)
+
 
 def p_expression_print(p):
     '''expression : PRINT string_expression'''
@@ -157,19 +173,22 @@ def p_expression_print(p):
         p[0] = Print(p[2])
     print(p[2])
 
+
 def p_expression_for(p):
     '''expression : FOR variable IN string_list DO expression_list ENDFOR
                   | FOR variable IN variable DO expression_list ENDFOR'''
     if len(p) == 8:
-        p[0] = For(p[2],p[4],p[6])
+        p[0] = For(p[2], p[4], p[6])
     print(7)
+
 
 def p_expression_var(p):
     '''expression : variable ASSIGN string_expression
                   | variable ASSIGN string_list'''
     if len(p) == 4:
-        p[0] = Assign(p[1],p[3])
+        p[0] = Assign(p[1], p[3])
     print(6)
+
 
 def p_string_expression(p):
     '''string_expression : string
@@ -178,8 +197,9 @@ def p_string_expression(p):
     if len(p) == 2:
         p[0] = String_Expression(p[1])
     elif len(p) == 4:
-        p[0] = String_Expression(p[1],p[3])
+        p[0] = String_Expression(p[1], p[3])
     print(5)
+
 
 def p_string_list(p):
     '''string_list : LPARENTHESE string_list_interior RPARENTHESE '''
@@ -187,13 +207,14 @@ def p_string_list(p):
         p[0] = String_List(p[2])
     print(4)
 
+
 def p_string_list_interior(p):
     '''string_list_interior : string
                             | string ',' string_list_interior'''
     if len(p) == 2:
         p[0] = String_List_Interior(p[1])
     elif len(p) == 4:
-        p[0] = String_List_Interior(p[1],p[3])
+        p[0] = String_List_Interior(p[1], p[3])
     print(3)
 
 
@@ -201,6 +222,7 @@ def p_variable(p):
     '''variable : ID'''
     p[0] = Variable(p[1])
     print(2)
+
 
 def p_string(p):
     '''string : QUOTE STRING QUOTE'''
@@ -217,6 +239,37 @@ def p_error(p):
         print("Syntax error at EOF")
 
 
+def p_arithmetic(p):
+    """expression : expression OP expression"""
+    match p[2]:
+        case '+':
+            p[0] = p[1] + p[3]
+        case '-':
+            p[0] = p[1] - p[3]
+        case '*':
+            p[0] = p[1] * p[3]
+        case '/':
+            p[0] = p[1] / p[3]
+
+
+def p_boolean(p):
+    """expression : expression BOOLEAN expression"""
+    match p[2]:
+        case 'and':
+            p[0] = p[1] and p[3]
+        case 'or':
+            p[0] = p[1] or p[3]
+
+
+def p_true_false(p):
+    """expression : expression BOOLEAN"""
+    match p[2]:
+        case 'true':
+            p[0] = True
+        case 'false':
+            p[0] = False
+
+
 # SEMANTIC ANALYSIS
 
 class For:
@@ -231,74 +284,79 @@ class For:
         for i in self.args.getValue():
             dico[self.var.getName()] = i
             p += self.expr.do()
-        if value != None :
+        if value != None:
             dico[self.var.getName()] = value
-        else :
+        else:
             del dico[self.var.getName()]
         return p
 
 
 class Print:
-    def __init__(self,exp):
+    def __init__(self, exp):
         self.exp = exp
 
     def do(self):
         return self.exp.do()
 
+
 class Variable:
-    def __init__(self,name,value=None):
+    def __init__(self, name, value=None):
         self.name = name
         self.value = value
         self.type = 'variable'
-    
+
     def getValue(self):
         return dico.get(self.name)
-    
+
     def getName(self):
         return self.name
 
+
 class Str:
-    def __init__(self,value):
+    def __init__(self, value):
         self.value = value
         self.type = 'string'
 
     def getValue(self):
         return self.value
-    
 
-class String_List_Interior :
-    def __init__(self,string, string_list_interior=None):
+
+class String_List_Interior:
+    def __init__(self, string, string_list_interior=None):
         self.string = string
         self.string_list_interior = string_list_interior
-    
+
     def do(self):
-        if self.string_list_interior == None :
+        if self.string_list_interior == None:
             return [self.string.getValue()]
-        else :
+        else:
             return [self.string.getValue()] + self.string_list_interior.do()
-        
-class String_List :
-    def __init__(self,string_list_interior):
+
+
+class String_List:
+    def __init__(self, string_list_interior):
         self.string_list_interior = string_list_interior
         self.type = 'string_list'
-    
+
     def do(self):
         return self.string_list_interior.do()
-    
-class String_Expression :
-    def __init__(self,expr,string_expression=None):
+
+
+class String_Expression:
+    def __init__(self, expr, string_expression=None):
         self.expr = expr
         self.string_expression = string_expression
         self.type = 'string_expression'
-    
+
     def do(self):
-        if self.string_expression == None :
+        if self.string_expression == None:
             return self.expr.getValue()
-        else :
+        else:
             return self.expr.do() + self.string_expression.do()
 
-class Assign :
-    def __init__(self,variable,string):
+
+class Assign:
+    def __init__(self, variable, string):
         self.variable = variable
         self.string = string
 
@@ -306,16 +364,18 @@ class Assign :
         dico[self.variable.getName()] = self.string.do()
         return ''
 
+
 class Expression_List:
-    def __init__(self,expr1,expr2=None):
+    def __init__(self, expr1, expr2=None):
         self.expr1 = expr1
         self.expr2 = expr2
-    
+
     def do(self):
-        if self.expr2 == None :
+        if self.expr2 == None:
             return self.expr1.do()
-        else :
+        else:
             return self.expr1.do() + self.expr2.do()
+
 
 # Testing
 if __name__ == "__main__":
