@@ -1,7 +1,6 @@
 import sys
-import ply.lex as lex
-import ply.yacc as yacc
-
+from ply import lex
+from ply import yacc
 # Token Analysis
 
 states = (
@@ -54,7 +53,7 @@ def t_DUMBO_START(t):
 
 
 def t_TXT(t):
-    r'[^({{)]+'
+    r'[^{]+'
     return t
 
 
@@ -254,17 +253,17 @@ def p_arithmetic_variable(p):
 
 def p_arithmetic_var_ar(p):
     '''arithmetic : variable OP INTEGER'''
-    p[0] = OperationVarAr(p[2], p[1], p[3])
+    p[0] = OperationVarInt(p[2], p[1], p[3])
 
 
 def p_arithmetic_ar_var(p):
     '''arithmetic : INTEGER OP variable'''
-    p[0] = OperationVarAr(p[2], p[3], p[1])
+    p[0] = OperationVarInt(p[2], p[3], p[1])
 
 
 def p_arithmetic_ar(p):
     '''arithmetic : INTEGER OP INTEGER'''
-    p[0] = OperationAr(p[2], p[1], p[3])
+    p[0] = OperationInt(p[2], p[1], p[3])
 
 
 def p_integer(p):
@@ -386,40 +385,40 @@ class OperationVariable:
                 return self.value1.get_value() / self.value2.get_value()
 
 
-class OperationVarAr:
-    def __init__(self, op, var, ar):
+class OperationVarInt:
+    def __init__(self, op, var, integer):
         self.op = op
         self.var = var
-        self.ar = ar
+        self.integer = integer
 
     def do(self):
         match self.op:
             case '+':
-                return self.var.get_value() + self.ar
+                return self.var.get_value() + self.integer
             case '-':
-                return self.var.get_value() - self.ar
+                return self.var.get_value() - self.integer
             case '*':
-                return self.var.get_value() * self.ar
+                return self.var.get_value() * self.integer
             case '/':
-                return self.var.get_value() / self.ar
+                return self.var.get_value() / self.integer
 
 
-class OperationAr:
-    def __init__(self, op, ar1, ar2):
+class OperationInt:
+    def __init__(self, op, integer1, integer2):
         self.op = op
-        self.ar1 = ar1
-        self.ar2 = ar2
+        self.integer1 = integer1
+        self.integer2 = integer2
 
     def do(self):
         match self.op:
             case '+':
-                return self.ar1 + self.ar2
+                return self.integer1 + self.integer2
             case '-':
-                return self.ar1 - self.ar2
+                return self.integer1 - self.integer2
             case '*':
-                return self.ar1 * self.ar2
+                return self.integer1 * self.integer2
             case '/':
-                return self.ar1 / self.ar2
+                return self.integer1 / self.integer2
 
 
 class BooleanOp:
@@ -511,12 +510,12 @@ if __name__ == "__main__":
     lexer = lex.lex()
     parser = yacc.yacc()
 
-    dumbo = open(sys.argv[1]).read()
+    dumbo = open(sys.argv[1], encoding='utf-8').read()
     yacc.parse(dumbo, debug=True)
     print("------------------------------------")
     print(dico.items())
-    template = open(sys.argv[2]).read()
+    template = open(sys.argv[2], encoding='utf-8').read()
     result = yacc.parse(template, debug=True)
-    file_html = open("output.html", "w")
+    file_html = open('output.html', 'w', encoding='utf-8')
     file_html.write(result)
     print(result)
