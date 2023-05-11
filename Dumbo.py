@@ -40,7 +40,12 @@ tokens = [
          ] + list(reserved.values())
 
 
+precedence = (
+    ('right', '.')
+)
+
 # INITIAL STATE
+
 
 def t_DUMBO_START(t):
     r'(\{\{)'
@@ -51,9 +56,6 @@ def t_DUMBO_START(t):
 def t_TXT(t):
     r'[^({{)]+'
     return t
-
-
-t_ignore = ' \t \n'
 
 
 # BLOC
