@@ -1,7 +1,9 @@
 import sys
 from ply import lex
 from ply import yacc
-# Token Analysis
+
+
+# TOKEN ANALYSIS
 
 states = (
     ('bloc', 'exclusive'),
@@ -38,10 +40,6 @@ tokens = [
              'INTEGER'
          ] + list(reserved.values())
 
-
-precedence = (
-    ('right', '.')
-)
 
 # INITIAL STATE
 
@@ -140,7 +138,8 @@ def t_ANY_error(t):
     t.lexer.skip(1)
 
 
-# Syntaxical Analysis
+# ------------------------------------------------------------
+# SYNTAXICAL ANALYSIS
 
 dico = {}
 temp_dico = {}
@@ -170,9 +169,12 @@ def p_txt(p):
 
 
 def p_dumbo_bloc(p):
-    '''dumbo_bloc : DUMBO_START expression_list DUMBO_END'''
-    if p[1] == '{{' and p[3] == '}}':
+    '''dumbo_bloc : DUMBO_START expression_list DUMBO_END
+                  | DUMBO_START DUMBO_END'''
+    if len(p) == 4:
         p[0] = p[2].do()
+    else:
+        p[0] = ''
 
 
 def p_expression_list(p):
@@ -214,7 +216,8 @@ def p_expression_var(p):
 def p_string_expression(p):
     '''string_expression : string
                          | variable
-                         | string_expression '.' string_expression '''
+                         | string '.' string_expression
+                         | variable '.' string_expression '''
     if len(p) == 2:
         p[0] = StringExpression(p[1])
     elif len(p) == 4:
@@ -274,7 +277,9 @@ def p_integer(p):
 
 def p_boolean_op(p):
     '''boolean_op : comparison OR comparison
-                  | comparison AND comparison'''
+                  | comparison AND comparison
+                  | boolean_op AND comparison
+                  | boolean_op OR comparison'''
     p[0] = BooleanOp(p[1], p[2], p[3])
 
 
@@ -294,8 +299,9 @@ def p_error(p):
     else:
         print("Syntax error at EOF")
 
-
+# ------------------------------------------------------------
 # SEMANTIC ANALYSIS
+
 
 class For:
     def __init__(self, var, args, expr):
@@ -481,7 +487,7 @@ class StringExpression:
         if self.string_expression is None:
             return self.expr.get_value()
         else:
-            return self.expr.do() + self.string_expression.do()
+            return self.expr.get_value() + self.string_expression.do()
 
 
 class Assign:
@@ -505,17 +511,18 @@ class ExpressionList:
         return self.expr1.do() + self.expr2.do()
 
 
-# Testing
+# ------------------------------------------------------------
+# TESTING
 if __name__ == "__main__":
     lexer = lex.lex()
     parser = yacc.yacc()
 
     dumbo = open(sys.argv[1], encoding='utf-8').read()
-    yacc.parse(dumbo, debug=True)
-    print("------------------------------------")
-    print(dico.items())
+    yacc.parse(dumbo)
+
     template = open(sys.argv[2], encoding='utf-8').read()
-    result = yacc.parse(template, debug=True)
+    result = yacc.parse(template)
+
     file_html = open('output.html', 'w', encoding='utf-8')
     file_html.write(result)
     print(result)
