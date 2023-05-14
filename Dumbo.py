@@ -55,7 +55,7 @@ def t_TXT(t):
     return t
 
 
-# BLOC
+# BLOC STATE
 
 def t_bloc_DUMBO_END(t):
     r'(\}\})'
@@ -142,7 +142,6 @@ def t_ANY_error(t):
 # SYNTAXICAL ANALYSIS
 
 dico = {}
-temp_dico = {}
 
 
 def p_programme_txt(p):
